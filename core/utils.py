@@ -18,7 +18,7 @@ def load_freeze_layer(model='yolov4', tiny=False):
             freeze_layouts = ['conv2d_93', 'conv2d_101', 'conv2d_109']
     return freeze_layouts
 
-def load_weights(model, weights_file, model_name='yolov4', is_tiny=False):
+def load_weights(model, weights_file, model_name='yolov4', is_tiny=False, dtype=np.float32):
     if is_tiny:
         if model_name == 'yolov3':
             layer_size = 13
@@ -63,10 +63,10 @@ def load_weights(model, weights_file, model_name='yolov4', is_tiny=False):
         conv_weights = conv_weights.reshape(conv_shape).transpose([2, 3, 1, 0])
 
         if i not in output_pos:
-            conv_layer.set_weights([conv_weights])
-            bn_layer.set_weights(bn_weights)
+            conv_layer.set_weights([conv_weights.astype(dtype)])
+            bn_layer.set_weights(bn_weights.astype(dtype))
         else:
-            conv_layer.set_weights([conv_weights, conv_bias])
+            conv_layer.set_weights([conv_weights.astype(dtype), conv_bias.astype(dtype)])
 
     # assert len(wf.read()) == 0, 'failed to read all data'
     wf.close()
@@ -252,6 +252,17 @@ def bbox_giou(bboxes1, bboxes2):
 
     return giou
 
+# helper function to convert bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, xmax, ymax
+def format_boxes(bboxes, image_height, image_width):
+    for box in bboxes:
+        ymin = int(box[0] * image_height)
+        xmin = int(box[1] * image_width)
+        ymax = int(box[2] * image_height)
+        xmax = int(box[3] * image_width)
+        width = xmax - xmin
+        height = ymax - ymin
+        box[0], box[1], box[2], box[3] = xmin, ymin, width, height
+    return bboxes
 
 def bbox_ciou(bboxes1, bboxes2):
     """
