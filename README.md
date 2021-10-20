@@ -51,9 +51,8 @@ model.predict_single_image(
 
 ### model.predict_multi_image
 
-The batched (multiple input images) equivalent of ```detect_poses```. Performs person detection,
-multi-person absolute 3D human pose estimation with test-time augmentation, output pose
-plausibility-filtering and non-maximum suppression (optional) on a batch of images.
+The batched (multiple input images) equivalent of ```predict_single_image```. Performs person detection
+on a batch of RGB images.
 
 ```python
 model.predict_multi_image(
